@@ -10,9 +10,10 @@ class Client extends Model
         'name',
         'email',
         'phone',
-        'adress',
+        'address',
         'city',
         'postcode',
+        'user_id',
     ];
 
     protected $appends = [

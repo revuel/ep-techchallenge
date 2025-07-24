@@ -1950,6 +1950,19 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: 'ClientForm',
@@ -1962,13 +1975,24 @@ __webpack_require__.r(__webpack_exports__);
         address: '',
         city: '',
         postcode: ''
-      }
+      },
+      errors: []
     };
   },
   methods: {
     storeClient: function storeClient() {
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('/clients', this.client).then(function (data) {
-        window.location.href = data.data.url;
+      var _this = this;
+      this.errors = [];
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('/clients', this.client).then(function (response) {
+        window.location.href = response.data.url;
+      })["catch"](function (error) {
+        if (error.response && error.response.status === 422) {
+          var responseErrors = error.response.data.errors;
+          _this.errors = Object.values(responseErrors).flat();
+        } else {
+          // Other potential ones 
+          _this.errors = ['An unexpected error occurred. Please try again.'];
+        }
       });
     }
   }
@@ -1987,6 +2011,15 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils_timeUtils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/timeUtils */ "./resources/js/utils/timeUtils.js");
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -2067,12 +2100,15 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
+
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: 'ClientShow',
   props: ['client'],
   data: function data() {
     return {
-      currentTab: 'bookings'
+      currentTab: 'bookings',
+      bookingFilter: 'all'
     };
   },
   methods: {
@@ -2081,6 +2117,22 @@ __webpack_require__.r(__webpack_exports__);
     },
     deleteBooking: function deleteBooking(booking) {
       axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"]("/bookings/".concat(booking.id));
+    },
+    formatBookingTime: _utils_timeUtils__WEBPACK_IMPORTED_MODULE_1__["formatBookingTime"]
+  },
+  computed: {
+    filteredBookings: function filteredBookings() {
+      var _this = this;
+      var today = new Date().setHours(0, 0, 0, 0);
+      return this.client.bookings.filter(function (booking) {
+        var bookingStart = new Date(booking.start).setHours(0, 0, 0, 0);
+        if (_this.bookingFilter === 'future') {
+          return bookingStart >= today;
+        } else if (_this.bookingFilter === 'past') {
+          return bookingStart < today;
+        }
+        return true;
+      });
     }
   }
 });
@@ -2098,6 +2150,12 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread(); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
+function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 //
 //
 //
@@ -2132,12 +2190,29 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: 'ClientsList',
   props: ['clients'],
+  data: function data() {
+    return {
+      localClients: _toConsumableArray(this.clients) // make a deep local copy to re-render
+    };
+  },
   methods: {
     deleteClient: function deleteClient(client) {
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"]("/clients/".concat(client.id));
+      var _this = this;
+      // I find it dangerous to just remove the client, so I added this dummy confirmation
+      if (!confirm("Are you sure you want to delete ".concat(client.name, "?"))) return;
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"]("/clients/".concat(client.id)).then(function () {
+        // Remove client from local list
+        _this.localClients = _this.localClients.filter(function (c) {
+          return c.id !== client.id;
+        });
+      })["catch"](function (error) {
+        console.error('Failed to delete client:', error);
+        alert('An error occurred while deleting the client.');
+      });
     }
   }
 });
@@ -2169,6 +2244,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {
     console.log('Component mounted.');
@@ -37839,7 +37915,47 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("h1", { staticClass: "mb-6" }, [_vm._v("Clients -> Add New Client")]),
+    _c("h1", { staticClass: "mb-6" }, [_vm._v("Clients → Add New Client")]),
+    _vm._v(" "),
+    _vm.errors.length
+      ? _c(
+          "div",
+          {
+            staticClass:
+              "bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6"
+          },
+          [
+            _c("strong", { staticClass: "font-bold" }, [_vm._v("Whoops!")]),
+            _vm._v(" "),
+            _c("span", { staticClass: "block sm:inline" }, [
+              _vm._v("There were some problems with your input:")
+            ]),
+            _vm._v(" "),
+            _c(
+              "ul",
+              { staticClass: "mt-2 list-disc list-inside text-sm" },
+              _vm._l(_vm.errors, function(error, index) {
+                return _c("li", { key: index }, [_vm._v(_vm._s(error))])
+              }),
+              0
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass:
+                  "absolute top-0 bottom-0 right-0 px-4 py-3 text-xl leading-none",
+                on: {
+                  click: function($event) {
+                    _vm.errors = []
+                  }
+                }
+              },
+              [_vm._v("\n            ×\n        ")]
+            )
+          ]
+        )
+      : _vm._e(),
     _vm._v(" "),
     _c("div", { staticClass: "max-w-lg mx-auto" }, [
       _c("div", { staticClass: "form-group" }, [
@@ -37921,7 +38037,7 @@ var render = function() {
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "form-group" }, [
-        _c("label", { attrs: { for: "name" } }, [_vm._v("Address")]),
+        _c("label", { attrs: { for: "address" } }, [_vm._v("Address")]),
         _vm._v(" "),
         _c("input", {
           directives: [
@@ -38136,20 +38252,75 @@ var render = function() {
                   _vm._v("List of client bookings")
                 ]),
                 _vm._v(" "),
-                _vm.client.bookings && _vm.client.bookings.length > 0
+                _c("div", { staticClass: "mb-3" }, [
+                  _c(
+                    "label",
+                    { staticClass: "mr-2", attrs: { for: "bookingFilter" } },
+                    [_vm._v("Show:")]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "select",
+                    {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.bookingFilter,
+                          expression: "bookingFilter"
+                        }
+                      ],
+                      staticClass: "form-control d-inline-block w-auto",
+                      attrs: { id: "bookingFilter" },
+                      on: {
+                        change: function($event) {
+                          var $$selectedVal = Array.prototype.filter
+                            .call($event.target.options, function(o) {
+                              return o.selected
+                            })
+                            .map(function(o) {
+                              var val = "_value" in o ? o._value : o.value
+                              return val
+                            })
+                          _vm.bookingFilter = $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        }
+                      }
+                    },
+                    [
+                      _c("option", { attrs: { value: "all" } }, [
+                        _vm._v("All bookings")
+                      ]),
+                      _vm._v(" "),
+                      _c("option", { attrs: { value: "future" } }, [
+                        _vm._v("Future bookings only")
+                      ]),
+                      _vm._v(" "),
+                      _c("option", { attrs: { value: "past" } }, [
+                        _vm._v("Past bookings only")
+                      ])
+                    ]
+                  )
+                ]),
+                _vm._v(" "),
+                _vm.filteredBookings && _vm.filteredBookings.length > 0
                   ? [
                       _c("table", [
                         _vm._m(0),
                         _vm._v(" "),
                         _c(
                           "tbody",
-                          _vm._l(_vm.client.bookings, function(booking) {
+                          _vm._l(_vm.filteredBookings, function(booking) {
                             return _c("tr", { key: booking.id }, [
                               _c("td", [
                                 _vm._v(
-                                  _vm._s(booking.start) +
-                                    " - " +
-                                    _vm._s(booking.end)
+                                  _vm._s(
+                                    _vm.formatBookingTime(
+                                      booking.start,
+                                      booking.end
+                                    )
+                                  )
                                 )
                               ]),
                               _vm._v(" "),
@@ -38243,7 +38414,7 @@ var render = function() {
       _vm._v(" "),
       _c(
         "tbody",
-        _vm._l(_vm.clients, function(client) {
+        _vm._l(_vm.localClients, function(client) {
           return _c("tr", { key: client.id }, [
             _c("td", [_vm._v(_vm._s(client.name))]),
             _vm._v(" "),
@@ -50595,9 +50766,10 @@ module.exports = function(module) {
  * includes Vue and other libraries. It is a great starting point when
  * building robust, powerful web applications using Vue and Laravel.
  */
-__webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
+__webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
+
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -50605,6 +50777,7 @@ window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.
  *
  * Eg. ./components/ExampleComponent.vue -> <example-component></example-component>
  */
+
 // const files = require.context('./', true, /\.vue$/i)
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default))
 
@@ -50612,6 +50785,7 @@ Vue.component('example-component', __webpack_require__(/*! ./components/ExampleC
 Vue.component('clients-list', __webpack_require__(/*! ./components/ClientsList.vue */ "./resources/js/components/ClientsList.vue")["default"]);
 Vue.component('client-form', __webpack_require__(/*! ./components/ClientForm.vue */ "./resources/js/components/ClientForm.vue")["default"]);
 Vue.component('client-show', __webpack_require__(/*! ./components/ClientShow.vue */ "./resources/js/components/ClientShow.vue")["default"]);
+
 /**
  * Next, we will create a fresh Vue application instance and attach it to
  * the page. Then, you may begin adding components to this application
@@ -50632,6 +50806,7 @@ var app = new Vue({
 /***/ (function(module, exports, __webpack_require__) {
 
 window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+
 /**
  * We'll load jQuery and the Bootstrap jQuery plugin which provides support
  * for JavaScript based Bootstrap features such as modals and tabs. This
@@ -50641,25 +50816,28 @@ window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 try {
   window.Popper = __webpack_require__(/*! popper.js */ "./node_modules/popper.js/dist/esm/popper.js")["default"];
   window.$ = window.jQuery = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-
   __webpack_require__(/*! bootstrap */ "./node_modules/bootstrap/dist/js/bootstrap.js");
 } catch (e) {}
+
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
  * to our Laravel back-end. This library automatically handles sending the
  * CSRF token as a header based on the value of the "XSRF" token cookie.
  */
 
-
 window.axios = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
  * allows your team to easily build robust real-time web applications.
  */
+
 // import Echo from 'laravel-echo';
+
 // window.Pusher = require('pusher-js');
+
 // window.Echo = new Echo({
 //     broadcaster: 'pusher',
 //     key: process.env.MIX_PUSHER_APP_KEY,
@@ -50945,6 +51123,48 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/utils/timeUtils.js":
+/*!*****************************************!*\
+  !*** ./resources/js/utils/timeUtils.js ***!
+  \*****************************************/
+/*! exports provided: formatBookingTime */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "formatBookingTime", function() { return formatBookingTime; });
+/**
+ * Transforms start and end datetime tuples 
+ * into this format: Monday 19 January 2020, 14:00 to 15:00
+ * 
+ * @param {*} start string with datetime format (2024-12-01T07:53:18.000000Z)
+ * @param {*} end string with datetime format (2024-12-01T07:53:18.000000Z)
+ * @param {*} locale string joining ISO 639-1 language code and ISO 3166-1 country code
+ * @returns 
+ */
+function formatBookingTime(start, end) {
+  var locale = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'en-GB';
+  var startDate = new Date(start);
+  var endDate = new Date(end);
+  var optionsDate = {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  };
+  var optionsTime = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  };
+  var formattedDate = startDate.toLocaleDateString(locale, optionsDate);
+  var formattedStartTime = startDate.toLocaleTimeString(locale, optionsTime);
+  var formattedEndTime = endDate.toLocaleTimeString(locale, optionsTime);
+  return "".concat(formattedDate, ", ").concat(formattedStartTime, " to ").concat(formattedEndTime);
+}
+
+/***/ }),
+
 /***/ "./resources/sass/app.scss":
 /*!*********************************!*\
   !*** ./resources/sass/app.scss ***!
@@ -50963,8 +51183,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /Users/arunas/Sites/tech-challenge/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /Users/arunas/Sites/tech-challenge/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! /Users/miguelrevuelta/Sources/ep-techchallenge-public/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /Users/miguelrevuelta/Sources/ep-techchallenge-public/resources/sass/app.scss */"./resources/sass/app.scss");
 
 
 /***/ })
