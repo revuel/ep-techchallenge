@@ -13,6 +13,7 @@ class Client extends Model
         'address',
         'city',
         'postcode',
+        'user_id',
     ];
 
     protected $appends = [

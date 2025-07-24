@@ -13,5 +13,6 @@ $factory->define(Client::class, function (Faker $faker) {
         'address'  => $faker->streetAddress,
         'city' => $faker->city,
         'postcode' => $faker->postcode,
+        'user_id'  => factory(App\User::class),
     ];
 });

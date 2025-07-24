@@ -22,6 +22,7 @@ class ClientTest extends TestCase
             'address',
             'city',
             'postcode',
+            'user_id'
         ], $client->getFillable());
     }
 }
