@@ -1988,6 +1988,7 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils_timeUtils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils/timeUtils */ "./resources/js/utils/timeUtils.js");
 //
 //
 //
@@ -2067,6 +2068,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -2083,7 +2085,8 @@ __webpack_require__.r(__webpack_exports__);
     },
     deleteBooking: function deleteBooking(booking) {
       axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"]("/bookings/".concat(booking.id));
-    }
+    },
+    formatBookingTime: _utils_timeUtils__WEBPACK_IMPORTED_MODULE_1__["formatBookingTime"]
   }
 });
 
@@ -38151,9 +38154,12 @@ var render = function() {
                             return _c("tr", { key: booking.id }, [
                               _c("td", [
                                 _vm._v(
-                                  _vm._s(booking.start) +
-                                    " - " +
-                                    _vm._s(booking.end)
+                                  _vm._s(
+                                    _vm.formatBookingTime(
+                                      booking.start,
+                                      booking.end
+                                    )
+                                  )
                                 )
                               ]),
                               _vm._v(" "),
@@ -50953,6 +50959,48 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_ExampleComponent_vue_vue_type_template_id_299e239e___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
+
+/***/ }),
+
+/***/ "./resources/js/utils/timeUtils.js":
+/*!*****************************************!*\
+  !*** ./resources/js/utils/timeUtils.js ***!
+  \*****************************************/
+/*! exports provided: formatBookingTime */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "formatBookingTime", function() { return formatBookingTime; });
+/**
+ * Transforms start and end datetime tuples 
+ * into this format: Monday 19 January 2020, 14:00 to 15:00
+ * 
+ * @param {*} start string with datetime format (2024-12-01T07:53:18.000000Z)
+ * @param {*} end string with datetime format (2024-12-01T07:53:18.000000Z)
+ * @param {*} locale string joining ISO 639-1 language code and ISO 3166-1 country code
+ * @returns 
+ */
+function formatBookingTime(start, end) {
+  var locale = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'en-GB';
+  var startDate = new Date(start);
+  var endDate = new Date(end);
+  var optionsDate = {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  };
+  var optionsTime = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  };
+  var formattedDate = startDate.toLocaleDateString(locale, optionsDate);
+  var formattedStartTime = startDate.toLocaleTimeString(locale, optionsTime);
+  var formattedEndTime = endDate.toLocaleTimeString(locale, optionsTime);
+  return "".concat(formattedDate, ", ").concat(formattedStartTime, " to ").concat(formattedEndTime);
+}
 
 /***/ }),
 
