@@ -1950,6 +1950,18 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -1963,13 +1975,24 @@ __webpack_require__.r(__webpack_exports__);
         address: '',
         city: '',
         postcode: ''
-      }
+      },
+      errors: []
     };
   },
   methods: {
     storeClient: function storeClient() {
-      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('/clients', this.client).then(function (data) {
-        window.location.href = data.data.url;
+      var _this = this;
+      this.errors = [];
+      axios__WEBPACK_IMPORTED_MODULE_0___default.a.post('/clients', this.client).then(function (response) {
+        window.location.href = response.data.url;
+      })["catch"](function (error) {
+        if (error.response && error.response.status === 422) {
+          var responseErrors = error.response.data.errors;
+          _this.errors = Object.values(responseErrors).flat();
+        } else {
+          // Other potential ones 
+          _this.errors = ['An unexpected error occurred. Please try again.'];
+        }
       });
     }
   }
@@ -37892,7 +37915,47 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("h1", { staticClass: "mb-6" }, [_vm._v("Clients -> Add New Client")]),
+    _c("h1", { staticClass: "mb-6" }, [_vm._v("Clients → Add New Client")]),
+    _vm._v(" "),
+    _vm.errors.length
+      ? _c(
+          "div",
+          {
+            staticClass:
+              "bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6"
+          },
+          [
+            _c("strong", { staticClass: "font-bold" }, [_vm._v("Whoops!")]),
+            _vm._v(" "),
+            _c("span", { staticClass: "block sm:inline" }, [
+              _vm._v("There were some problems with your input:")
+            ]),
+            _vm._v(" "),
+            _c(
+              "ul",
+              { staticClass: "mt-2 list-disc list-inside text-sm" },
+              _vm._l(_vm.errors, function(error, index) {
+                return _c("li", { key: index }, [_vm._v(_vm._s(error))])
+              }),
+              0
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass:
+                  "absolute top-0 bottom-0 right-0 px-4 py-3 text-xl leading-none",
+                on: {
+                  click: function($event) {
+                    _vm.errors = []
+                  }
+                }
+              },
+              [_vm._v("\n            ×\n        ")]
+            )
+          ]
+        )
+      : _vm._e(),
     _vm._v(" "),
     _c("div", { staticClass: "max-w-lg mx-auto" }, [
       _c("div", { staticClass: "form-group" }, [
@@ -37974,7 +38037,7 @@ var render = function() {
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "form-group" }, [
-        _c("label", { attrs: { for: "name" } }, [_vm._v("Address")]),
+        _c("label", { attrs: { for: "address" } }, [_vm._v("Address")]),
         _vm._v(" "),
         _c("input", {
           directives: [
