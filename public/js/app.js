@@ -2068,6 +2068,14 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -2076,7 +2084,8 @@ __webpack_require__.r(__webpack_exports__);
   props: ['client'],
   data: function data() {
     return {
-      currentTab: 'bookings'
+      currentTab: 'bookings',
+      bookingFilter: 'all'
     };
   },
   methods: {
@@ -2087,6 +2096,21 @@ __webpack_require__.r(__webpack_exports__);
       axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"]("/bookings/".concat(booking.id));
     },
     formatBookingTime: _utils_timeUtils__WEBPACK_IMPORTED_MODULE_1__["formatBookingTime"]
+  },
+  computed: {
+    filteredBookings: function filteredBookings() {
+      var _this = this;
+      var today = new Date().setHours(0, 0, 0, 0);
+      return this.client.bookings.filter(function (booking) {
+        var bookingStart = new Date(booking.start).setHours(0, 0, 0, 0);
+        if (_this.bookingFilter === 'future') {
+          return bookingStart >= today;
+        } else if (_this.bookingFilter === 'past') {
+          return bookingStart < today;
+        }
+        return true;
+      });
+    }
   }
 });
 
@@ -38165,14 +38189,66 @@ var render = function() {
                   _vm._v("List of client bookings")
                 ]),
                 _vm._v(" "),
-                _vm.client.bookings && _vm.client.bookings.length > 0
+                _c("div", { staticClass: "mb-3" }, [
+                  _c(
+                    "label",
+                    { staticClass: "mr-2", attrs: { for: "bookingFilter" } },
+                    [_vm._v("Show:")]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "select",
+                    {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.bookingFilter,
+                          expression: "bookingFilter"
+                        }
+                      ],
+                      staticClass: "form-control d-inline-block w-auto",
+                      attrs: { id: "bookingFilter" },
+                      on: {
+                        change: function($event) {
+                          var $$selectedVal = Array.prototype.filter
+                            .call($event.target.options, function(o) {
+                              return o.selected
+                            })
+                            .map(function(o) {
+                              var val = "_value" in o ? o._value : o.value
+                              return val
+                            })
+                          _vm.bookingFilter = $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        }
+                      }
+                    },
+                    [
+                      _c("option", { attrs: { value: "all" } }, [
+                        _vm._v("All bookings")
+                      ]),
+                      _vm._v(" "),
+                      _c("option", { attrs: { value: "future" } }, [
+                        _vm._v("Future bookings only")
+                      ]),
+                      _vm._v(" "),
+                      _c("option", { attrs: { value: "past" } }, [
+                        _vm._v("Past bookings only")
+                      ])
+                    ]
+                  )
+                ]),
+                _vm._v(" "),
+                _vm.filteredBookings && _vm.filteredBookings.length > 0
                   ? [
                       _c("table", [
                         _vm._m(0),
                         _vm._v(" "),
                         _c(
                           "tbody",
-                          _vm._l(_vm.client.bookings, function(booking) {
+                          _vm._l(_vm.filteredBookings, function(booking) {
                             return _c("tr", { key: booking.id }, [
                               _c("td", [
                                 _vm._v(
