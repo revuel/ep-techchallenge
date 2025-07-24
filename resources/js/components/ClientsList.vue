@@ -16,7 +16,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="client in clients" :key="client.id">
+                <tr v-for="client in localClients" :key="client.id">
                     <td>{{ client.name }}</td>
                     <td>{{ client.email }}</td>
                     <td>{{ client.phone }}</td>
@@ -39,9 +39,26 @@ export default {
 
     props: ['clients'],
 
+    data() {
+        return {
+            localClients: [...this.clients], // make a deep local copy to re-render
+        };
+    },
+
     methods: {
         deleteClient(client) {
-            axios.delete(`/clients/${client.id}`);
+            // I find it dangerous to just remove the client, so I added this dummy confirmation
+            if (!confirm(`Are you sure you want to delete ${client.name}?`)) return;
+
+            axios.delete(`/clients/${client.id}`)
+                .then(() => {
+                    // Remove client from local list
+                    this.localClients = this.localClients.filter(c => c.id !== client.id);
+                })
+                .catch(error => {
+                    console.error('Failed to delete client:', error);
+                    alert('An error occurred while deleting the client.');
+                });
         }
     }
 }
